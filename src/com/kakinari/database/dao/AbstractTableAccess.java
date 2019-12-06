@@ -200,8 +200,6 @@ public abstract class AbstractTableAccess {
 	}
 
 	public static String getCondition(String colname, String[] data, String extra, String ordercond, String groupcond) {
-		if (data == null)
-			return "";
 		String conn = " WHERE ";
 		StringBuffer buff = new StringBuffer();
 		if (extra != null) {

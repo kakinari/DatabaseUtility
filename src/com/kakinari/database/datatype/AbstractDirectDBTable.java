@@ -17,24 +17,47 @@ public abstract class AbstractDirectDBTable<T extends BaseUnit<?>> extends Abstr
 	
 	public AbstractDirectDBTable() {
 		super();
+		if (getDriverName() != null && getConnectURL() != null && getQueryString() != null) {
+			execute(null);
+		}
 	}
 
 	public AbstractDirectDBTable(Param param) {
 		super(param);
+		if (getDriverName() != null && getConnectURL() != null && getQueryString() != null) {
+			execute(null);
+		}
 	}
 
 	public AbstractDirectDBTable(String[] condition) {
-		super(condition);
+		super();
+		if (getDriverName() != null && getConnectURL() != null && getQueryString() != null) {
+			execute(condition);
+		}
 	}
 
 	public AbstractDirectDBTable(Param param, String[] condition) {
-		super(param, condition);
+		super(param);
+		if (getDriverName() != null && getConnectURL() != null && getQueryString() != null) {
+			execute(condition);
+		}
 	}
 
 	public AbstractDirectDBTable(ListUnit<T> list) {
 		super(list);
 	}
 	
+	protected void execute() {
+		new AbstractDirectTableAccess(getDriverName(),getConnectURL(), getProperties()) {
+			@Override
+			protected Object getAccessResult(ResultSet rs) throws SQLException {
+				while(rs.next())
+					add(getRowObject(rs));
+				return this;
+			}
+		}.execute(getQueryString());
+	}
+
 	protected void execute(String[] condition) {
 		new AbstractDirectTableAccess(getDriverName(),getConnectURL(), getProperties()) {
 			@Override

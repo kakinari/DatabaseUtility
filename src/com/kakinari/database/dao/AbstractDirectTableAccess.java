@@ -114,7 +114,13 @@ public abstract class AbstractDirectTableAccess {
 	}
 	
 	protected Connection open() throws SQLException, ClassNotFoundException {
-		Class.forName(this.driverName);
+		try {
+			Class.forName(this.driverName).newInstance();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
 		if (this.property != null)
 			return DriverManager.getConnection(this.URL, this.property);
 		else

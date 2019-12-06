@@ -206,8 +206,12 @@ public abstract class AbstractTableAccess {
 		StringBuffer buff = new StringBuffer();
 		if (extra != null) {
 			buff.append(conn).append("(").append(extra).append(")");
-			conn =  " AND (";
+			conn =  "\n AND (";
 		}
+		buff.append(getCondition(colname, data, conn));
+/*
+		if (!colname.contains("`"))
+			colname = "`" + colname + "`";
 		for (String row :data) {
 			if (row == null || row.length() == 0)
 				continue;
@@ -215,16 +219,17 @@ public abstract class AbstractTableAccess {
 				buff.append(conn);
 				String conn2 = " (";
 				for (String part : row.split("&")) {
-					buff.append(conn2).append("`").append(colname).append("`").append(getCondition(part));
+					buff.append(conn2).append(colname).append(getCondition(part));
 					conn2 = " AND ";
 				}
 				buff.append(")");
 			} else {
-				buff.append(conn).append("`").append(colname).append("`");
+				buff.append(conn).append(colname);
 				buff.append(getCondition(row));
 			}
 		    conn = "\n OR ";
 		}
+		*/
 		if (extra != null)
 			buff.append(")");
 		if (groupcond != null)
@@ -232,6 +237,36 @@ public abstract class AbstractTableAccess {
 		if (ordercond != null)
 			buff.append("\n ORDER BY ").append(ordercond);
 		buff.append(";");
+		return buff.toString();
+	}
+
+	public static String getSubCondition(String colname, String[] data) {
+		return getCondition(colname, data, "");
+	}
+
+	public static String getCondition(String colname, String[] data, String conn) {
+		if (data == null)
+			return "";
+		StringBuffer buff = new StringBuffer();
+		if (!colname.contains("`"))
+			colname = "`" + colname + "`";
+		for (String row :data) {
+			if (row == null || row.length() == 0)
+				continue;
+			if (row.contains("&")) {
+				buff.append(conn);
+				String conn2 = " (";
+				for (String part : row.split("&")) {
+					buff.append(conn2).append(colname).append(getCondition(part));
+					conn2 = " AND ";
+				}
+				buff.append(")");
+			} else {
+				buff.append(conn).append(colname);
+				buff.append(getCondition(row));
+			}
+		    conn = "\n OR ";
+		}
 		return buff.toString();
 	}
 
@@ -249,6 +284,10 @@ public abstract class AbstractTableAccess {
 				head = ", ";
 			}
 			buff.append(")");
+		} else if (row.startsWith("~")) {
+			buff.append(" REGEXP '").append(row.substring(1)).append("'");
+		} else if (row.startsWith("!~")) {
+			buff.append(" NOT REGEXP '").append(row.substring(2)).append("'");
 		} else if (row.startsWith("=")) {
 			buff.append(" = '").append(row.substring(1)).append("'");
 		} else if (row.startsWith("<>")) {
@@ -261,7 +300,7 @@ public abstract class AbstractTableAccess {
 			buff.append(" IS NULL");
 		} else if (row.equals("!NULL")) {
 			buff.append(" IS NOT NULL");
-		} else if (row.startsWith("%")) {
+		} else if (row.contains("%")) {
 			if (row.contains("_")) {
 				buff.append(" LIKE '").append(row.replace("_", "$_")).append("' ESCAPE '$'");
 			} else 

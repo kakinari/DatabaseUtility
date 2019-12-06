@@ -209,28 +209,7 @@ public abstract class AbstractTableAccess {
 			conn =  "\n AND (";
 		}
 		buff.append(getCondition(colname, data, conn));
-/*
-		if (!colname.contains("`"))
-			colname = "`" + colname + "`";
-		for (String row :data) {
-			if (row == null || row.length() == 0)
-				continue;
-			if (row.contains("&")) {
-				buff.append(conn);
-				String conn2 = " (";
-				for (String part : row.split("&")) {
-					buff.append(conn2).append(colname).append(getCondition(part));
-					conn2 = " AND ";
-				}
-				buff.append(")");
-			} else {
-				buff.append(conn).append(colname);
-				buff.append(getCondition(row));
-			}
-		    conn = "\n OR ";
-		}
-		*/
-		if (extra != null)
+		if (extra != null && data != null)
 			buff.append(")");
 		if (groupcond != null)
 			buff.append("\n GROUP BY ").append(groupcond);
